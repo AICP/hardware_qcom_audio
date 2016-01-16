@@ -15,6 +15,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * This file was modified by DTS, Inc. The portions of the
+ * code modified by DTS, Inc are copyrighted and
+ * licensed separately, as follows:
+ *
+ *  (C) 2016 DTS, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 
@@ -22,6 +40,9 @@
 #include <audio_policy_conf.h>
 #include <Volume.h>
 
+extern "C" {
+#include "AudioUtil.h"
+}
 
 namespace android {
 #ifndef AUDIO_EXTN_FORMATS_ENABLED
@@ -43,7 +64,11 @@ class AudioPolicyManagerCustom: public AudioPolicyManager
 public:
         AudioPolicyManagerCustom(AudioPolicyClientInterface *clientInterface);
 
-        virtual ~AudioPolicyManagerCustom() {}
+        virtual ~AudioPolicyManagerCustom() {
+#ifdef DTS_EAGLE
+            remove_route_node();
+#endif
+        }
 
         status_t setDeviceConnectionStateInt(audio_devices_t device,
                                           audio_policy_dev_state_t state,

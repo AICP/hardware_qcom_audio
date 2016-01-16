@@ -22,6 +22,12 @@
  *
  *  (C) 2015 Dolby Laboratories, Inc.
  *
+ * This file was modified by DTS, Inc. The portions of the
+ * code modified by DTS, Inc are copyrighted and
+ * licensed separately, as follows:
+ *
+ *  (C) 2016 DTS, Inc.
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -67,6 +73,7 @@
 #ifdef DOLBY_ENABLE
 #include "DolbyAudioPolicy_impl.h"
 #endif // DOLBY_END
+
 
 namespace android {
 #ifdef VOICE_CONCURRENCY
@@ -269,11 +276,20 @@ status_t AudioPolicyManagerCustom::setDeviceConnectionStateInt(audio_devices_t d
         }
 
         updateDevicesAndOutputs();
+
 #ifdef DOLBY_ENABLE
         // Before closing the opened outputs, update endpoint property with device capabilities
         audio_devices_t audioOutputDevice = getDeviceForStrategy(getStrategy(AUDIO_STREAM_MUSIC), true);
         mDolbyAudioPolicy.setEndpointSystemProperty(audioOutputDevice, mHwModules);
 #endif // DOLBY_END
+
+#ifdef DTS_EAGLE
+        audio_devices_t ndev = getDeviceForStrategy(STRATEGY_MEDIA, true);
+        audio_devices_t availableOutputDevices = availablePrimaryOutputDevices();
+        ALOGV("setDeviceConnectionState: device 0x%x all_devices 0x%x", ndev, availableOutputDevices);
+        notify_route_node(ndev, availableOutputDevices);
+#endif
+
         if (mEngine->getPhoneState() == AUDIO_MODE_IN_CALL && hasPrimaryOutput()) {
             audio_devices_t newDevice = getNewOutputDevice(mPrimaryOutput, false /*fromCache*/);
             updateCallRouting(newDevice);
@@ -2009,6 +2025,9 @@ AudioPolicyManagerCustom::AudioPolicyManagerCustom(AudioPolicyClientInterface *c
 
 #ifdef VOICE_CONCURRENCY
     mFallBackflag = getFallBackPath();
+#endif
+#ifdef DTS_EAGLE
+    create_route_node();
 #endif
 }
 }
